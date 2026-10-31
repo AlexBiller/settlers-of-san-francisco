@@ -1,0 +1,21 @@
+{
+  "name": "settlers-of-san-francisco",
+  "version": "1.0.0",
+  "description": "An original Catan-style online board game with a Bay Area theme. 4 seats, real-time multiplayer, AI fills empty seats.",
+  "main": "server/index.js",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "pg": "^8.23.1",
+    "ws": "^8.22.0"
+  }
+}
