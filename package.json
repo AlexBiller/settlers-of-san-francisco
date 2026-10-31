@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=20 <25"
   },
   "scripts": {
     "start": "node server/index.js",
@@ -14,8 +14,10 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.10.0",
     "pg": "^8.23.1",
     "ws": "^8.22.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.10.0"
   }
 }
