@@ -160,11 +160,36 @@ function render() {
   }
   const { room } = ui.msg;
   const top = topbar();
-  if (room.status === 'lobby') app.innerHTML = top + renderLobby();
-  else app.innerHTML = top + renderGame();
+  const log0 = document.querySelector('.log');
+  const stick = !log0 || log0.scrollHeight - log0.scrollTop - log0.clientHeight < 40;
+  const tpl = document.createElement('div');
+  tpl.innerHTML = top + (room.status === 'lobby' ? renderLobby() : renderGame());
+  morphChildren(app, tpl);
   bind();
   const log = document.querySelector('.log');
-  if (log) log.scrollTop = log.scrollHeight;
+  if (log && stick) log.scrollTop = log.scrollHeight;
+}
+
+// Patch the live DOM in place so unchanged elements (and in-progress clicks/focus) survive frequent server updates.
+function morphChildren(from, to) {
+  const a = [...from.childNodes];
+  const b = [...to.childNodes];
+  b.forEach((nb, i) => {
+    const na = a[i];
+    if (!na) from.appendChild(nb);
+    else if (na.nodeType !== nb.nodeType || na.nodeName !== nb.nodeName) from.replaceChild(nb, na);
+    else if (na.nodeType === 1) morphNode(na, nb);
+    else if (na.nodeValue !== nb.nodeValue) na.nodeValue = nb.nodeValue;
+  });
+  for (let i = b.length; i < a.length; i++) a[i].remove();
+}
+
+function morphNode(na, nb) {
+  for (const { name } of [...na.attributes]) if (!nb.hasAttribute(name)) na.removeAttribute(name);
+  for (const { name, value } of [...nb.attributes]) if (na.getAttribute(name) !== value) na.setAttribute(name, value);
+  if ('disabled' in na) na.disabled = nb.hasAttribute('disabled');
+  if (na.tagName === 'OPTION') na.selected = nb.hasAttribute('selected');
+  morphChildren(na, nb);
 }
 
 function topbar() {
@@ -525,7 +550,8 @@ function finalModal() {
 
 // ---------------- events ----------------
 function bind() {
-  const q = (sel, fn) => document.querySelectorAll(sel).forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); fn(el, e); }));
+  const once = (el, key) => { el.__bound = el.__bound || new Set(); if (el.__bound.has(key)) return false; el.__bound.add(key); return true; };
+  const q = (sel, fn) => document.querySelectorAll(sel).forEach((el) => { if (once(el, sel)) el.addEventListener('click', (e) => { e.preventDefault(); fn(el, e); }); });
   q('[data-go-home]', () => { location.href = '/'; });
   q('[data-copy]', () => {
     const link = `${location.origin}/r/${ui.msg.room.code}`;
@@ -535,7 +561,7 @@ function bind() {
   });
   // lobby
   const nameInput = document.getElementById('nameInput');
-  if (nameInput) {
+  if (nameInput && once(nameInput, 'input')) {
     nameInput.addEventListener('input', () => {
       ui.name = nameInput.value;
       localStorage.setItem('sosf:name', ui.name);
@@ -618,7 +644,7 @@ function bind() {
   q('[data-newgame]', () => createGame());
   ['bankGive', 'bankGet'].forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('change', () => { ui.modal[id] = el.value; });
+    if (el && once(el, 'change')) el.addEventListener('change', () => { ui.modal[id] = el.value; });
   });
 }
 
