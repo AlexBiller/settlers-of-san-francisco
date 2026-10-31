@@ -9,7 +9,7 @@ const { RoomManager, newToken } = require('./rooms');
 
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, '..', 'public');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
 
 function serveFile(res, file) {
   fs.readFile(file, (err, buf) => {
@@ -17,7 +17,7 @@ function serveFile(res, file) {
       res.writeHead(404, { 'content-type': 'text/plain' });
       return res.end('Not found');
     }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-cache' });
+    res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': file.includes(`${path.sep}tiles${path.sep}`) ? 'public, max-age=86400' : 'no-cache' });
     res.end(buf);
   });
 }

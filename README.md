@@ -45,7 +45,7 @@ An original, Bay Area–themed strategy board game for the web, inspired by clas
   First to **10** on their own turn wins.
 - **Ties for awards:** the current holder keeps an award when someone ties them. If the holder's path is broken and several players tie for longest, nobody holds it. To take Loudest Fog Horn, you must strictly exceed the holder.
 
-All names, flavor text and visuals are original. The board, icons and buildings are drawn with SVG, CSS and emoji. No third-party game assets are used.
+All names, flavor text and visuals are original. The tile art in `public/tiles/` is cut from an illustration supplied by the repo owner: redwoods, Painted Ladies, sourdough, a North Beach latte, a cable car for SoMa, and the Golden Gate in fog for the open bay. Pieces, tokens and icons are drawn with SVG, CSS and emoji. No third-party game assets are used.
 
 ## Architecture
 

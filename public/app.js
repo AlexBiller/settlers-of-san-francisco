@@ -74,7 +74,7 @@ async function createGame() {
 function renderLanding() {
   app.innerHTML = `
   <div class="landing">
-    <div class="bridge">🌉</div>
+    <img class="hero" src="/tiles/hero.jpg" alt="Illustrated San Francisco: Golden Gate in fog, Painted Ladies, a cable car, redwoods, sourdough and coffee" width="280" height="350">
     <h1>Settlers of <span>San Francisco</span></h1>
     <p class="tagline">Claim the hills, brew the coffee, dodge Karl the Fog. First to 10 points runs the city.</p>
     <div class="cta"><button class="primary" id="create">Create game</button></div>
@@ -326,15 +326,15 @@ function renderBoard() {
     const hot = sum && h.num === sum && h.id !== g.fog;
     const cx = h.x * S;
     const cy = h.y * S;
-    parts.push(`<g><title>${m.place} - ${m.name}${h.num ? ` (${h.num})` : ''}</title><polygon class="hex ${hot ? 'hot' : ''}" points="${hexPoints(g, h)}" fill="${m.color}"/>
-      <text x="${cx}" y="${cy - 22}" text-anchor="middle" dominant-baseline="central" font-size="22">${m.icon}</text>`);
+    parts.push(`<g><title>${m.place} - ${m.name}${h.num ? ` (${h.num})` : ''}</title><polygon class="hex ${hot ? 'hot' : ''}" points="${hexPoints(g, h)}" fill="url(#tile-${h.res}) ${m.color}"/>
+      ${h.num ? `<circle class="tile-badge" cx="${cx}" cy="${cy - 28}" r="11" fill="${m.color}"/><text x="${cx}" y="${cy - 27}" text-anchor="middle" dominant-baseline="central" font-size="12">${m.icon}</text>` : ''}`);
     if (h.num) {
       const red = h.num === 6 || h.num === 8;
       const dots = 6 - Math.abs(7 - h.num);
       parts.push(`<circle class="token" cx="${cx}" cy="${cy + 8}" r="16"/><text class="token-num ${red ? 'hot' : ''}" x="${cx}" y="${cy + 5}" font-size="${red ? 16 : 14}">${h.num}</text>`);
       for (let i = 0; i < dots; i++) parts.push(`<circle class="pip ${red ? 'hot' : ''}" cx="${cx + (i - (dots - 1) / 2) * 4.5}" cy="${cy + 17}" r="1.6"/>`);
     } else {
-      parts.push(`<text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">OPEN BAY</text>`);
+      parts.push(`<text class="bay-label" x="${cx}" y="${cy + 30}" text-anchor="middle">OPEN BAY</text>`);
     }
     parts.push('</g>');
   }
@@ -374,7 +374,7 @@ function renderBoard() {
   const pad = 26;
   const minX = Math.min(...xs) - pad; const minY = Math.min(...ys) - pad - 40;
   const w = Math.max(...xs) - minX + pad; const h = Math.max(...ys) - minY + pad;
-  return `<svg viewBox="${minX} ${minY} ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-label="Game board">${parts.join('')}</svg>`;
+  return `<svg viewBox="${minX} ${minY} ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-label="Game board"><defs>${Object.keys(META).map((r) => `<pattern id="tile-${r}" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="/tiles/${r}.jpg" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`).join('')}</defs>${parts.join('')}</svg>`;
 }
 
 function renderActions() {
