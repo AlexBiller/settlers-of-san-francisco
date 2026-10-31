@@ -550,8 +550,8 @@ function finalModal() {
 
 // ---------------- events ----------------
 function bind() {
-  const once = (el, key) => { el.__bound = el.__bound || new Set(); if (el.__bound.has(key)) return false; el.__bound.add(key); return true; };
-  const q = (sel, fn) => document.querySelectorAll(sel).forEach((el) => { if (once(el, sel)) el.addEventListener('click', (e) => { e.preventDefault(); fn(el, e); }); });
+  if (clickHandlers.length) return;
+  const q = (sel, fn) => clickHandlers.push([sel, fn]);
   q('[data-go-home]', () => { location.href = '/'; });
   q('[data-copy]', () => {
     const link = `${location.origin}/r/${ui.msg.room.code}`;
@@ -560,14 +560,6 @@ function bind() {
     });
   });
   // lobby
-  const nameInput = document.getElementById('nameInput');
-  if (nameInput && once(nameInput, 'input')) {
-    nameInput.addEventListener('input', () => {
-      ui.name = nameInput.value;
-      localStorage.setItem('sosf:name', ui.name);
-      document.querySelectorAll('[data-take]').forEach((b) => { b.disabled = !ui.name.trim(); });
-    });
-  }
   q('[data-color]', (el) => { ui.color = el.dataset.color; localStorage.setItem('sosf:color', ui.color); render(); });
   q('[data-take]', (el) => send({ type: 'takeSeat', seat: +el.dataset.take, name: ui.name, color: ui.color }));
   q('[data-update]', () => send({ type: 'takeSeat', seat: ui.msg.you.seat, name: ui.name, color: ui.color }));
@@ -642,11 +634,31 @@ function bind() {
   q('[data-close-final]', () => { ui.modal = { kind: 'closedFinal' }; render(); });
   q('[data-show-final]', () => { ui.modal = { kind: 'final' }; render(); });
   q('[data-newgame]', () => createGame());
-  ['bankGive', 'bankGet'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el && once(el, 'change')) el.addEventListener('change', () => { ui.modal[id] = el.value; });
-  });
 }
+
+// Delegated listeners: the DOM is patched in place, so an element can change role between renders.
+// Handlers are looked up from the element's current attributes at event time, never cached per element.
+const clickHandlers = [];
+document.addEventListener('click', (e) => {
+  for (let el = e.target; el && el !== document.documentElement; el = el.parentElement) {
+    const h = clickHandlers.find(([sel]) => el.matches(sel));
+    if (h) {
+      if (el.disabled) return;
+      e.preventDefault();
+      h[1](el, e);
+      return;
+    }
+  }
+});
+document.addEventListener('input', (e) => {
+  if (e.target.id !== 'nameInput') return;
+  ui.name = e.target.value;
+  localStorage.setItem('sosf:name', ui.name);
+  document.querySelectorAll('[data-take]').forEach((b) => { b.disabled = !ui.name.trim(); });
+});
+document.addEventListener('change', (e) => {
+  if ((e.target.id === 'bankGive' || e.target.id === 'bankGet') && ui.modal) ui.modal[e.target.id] = e.target.value;
+});
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && (ui.build || (ui.modal && ui.modal.kind !== 'discard'))) {
